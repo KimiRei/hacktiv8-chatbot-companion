@@ -1,6 +1,6 @@
 # Chatbot Upload Storage
 
-Folder ini disediakan untuk menyimpan file chatbot yang ingin di-upload ke repository ini.
+Folder ini disediakan untuk menyimpan file chatbot yang ingin diunggah ke repository ini.
 
 ## Cara pakai
 1. Simpan file chatbot kamu ke folder ini.

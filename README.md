@@ -1,9 +1,9 @@
 # hacktiv8-chatbot-companion
 
-## Penyimpanan upload chatbot
+## Penyimpanan unggahan chatbot
 
-Tempat upload chatbot sudah disiapkan di:
+Tempat unggah chatbot sudah disiapkan di:
 
 `/storage/chatbot-uploads`
 
-Silakan upload file chatbot kamu ke folder tersebut.
+Silakan unggah file chatbot kamu ke folder tersebut.
