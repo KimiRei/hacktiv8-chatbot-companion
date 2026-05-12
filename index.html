@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro & Teman Ngoding Bot</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom Scrollbar untuk kesan industrial */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #18181b; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200 h-screen flex flex-col md:flex-row font-sans overflow-hidden">
+
+    <!-- Panel Kiri: Pomodoro Timer (Industrial Style) -->
+    <div class="w-full md:w-1/3 lg:w-1/4 bg-zinc-900 border-b md:border-b-0 md:border-r border-zinc-800 p-6 flex flex-col justify-center items-center shadow-lg z-10">
+        <div class="text-center w-full">
+            <h1 class="text-xl font-bold text-zinc-100 mb-2 uppercase tracking-widest text-sm text-zinc-400">Pomodoro Timer</h1>
+            
+            <!-- Lingkaran Timer -->
+            <div class="relative w-48 h-48 mx-auto mt-6 rounded-full border-4 border-zinc-800 flex items-center justify-center bg-zinc-950 shadow-inner">
+                <span id="timer-display" class="text-5xl font-mono text-white tracking-tighter">25:00</span>
+            </div>
+
+            <!-- Status -->
+            <p id="timer-status" class="mt-6 text-zinc-400 text-sm font-medium tracking-wide uppercase">Sesi Fokus</p>
+
+            <!-- Tombol Kontrol -->
+            <div class="flex justify-center gap-4 mt-6">
+                <button id="start-btn" class="bg-zinc-100 text-zinc-900 hover:bg-white px-5 py-2 rounded font-semibold transition-colors duration-200 flex items-center gap-2">
+                    <i class="fa-solid fa-play text-xs"></i> Mulai
+                </button>
+                <button id="reset-btn" class="bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white px-5 py-2 rounded font-semibold transition-colors duration-200 flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right text-xs"></i> Reset
+                </button>
+            </div>
+
+            <!-- Mode Switch -->
+            <div class="flex justify-center gap-2 mt-8">
+                <button onclick="setTimer(25, 'Sesi Fokus')" class="text-xs px-3 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-zinc-100 transition">25m Fokus</button>
+                <button onclick="setTimer(5, 'Istirahat Pendek')" class="text-xs px-3 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-zinc-100 transition">5m Istirahat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Kanan: Chat Interface -->
+    <div class="flex-1 flex flex-col h-full bg-zinc-950 relative">
+        <!-- Header Chat -->
+        <header class="h-16 border-b border-zinc-800 flex items-center px-6 bg-zinc-950/80 backdrop-blur sticky top-0 z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-zinc-100 flex items-center justify-center text-zinc-950">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-zinc-100 leading-tight">Companion Bot</h2>
+                    <p class="text-xs text-zinc-500">Teman Ngoding & Debugging</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Area Obrolan -->
+        <div id="chat-container" class="flex-1 p-6 overflow-y-auto flex flex-col gap-4">
+            <!-- Pesan Pembuka dari Bot -->
+            <div class="flex items-start gap-3 w-full max-w-2xl">
+                <div class="w-8 h-8 rounded bg-zinc-800 flex-shrink-0 flex items-center justify-center mt-1 border border-zinc-700">
+                    <i class="fa-solid fa-robot text-sm text-zinc-400"></i>
+                </div>
+                <div class="bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-3 rounded-lg rounded-tl-none">
+                    Halo! Aku siap nemenin kamu ngoding hari ini. Mau fokus ngerjain apa? Jangan lupa nyalain timer Pomodoronya ya! ☕💻
+                </div>
+            </div>
+        </div>
+
+        <!-- Typing Indicator (Sembunyi by default) -->
+        <div id="typing-indicator" class="hidden px-6 py-2 text-xs text-zinc-500 flex items-center gap-2">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Bot sedang mengetik...
+        </div>
+
+        <!-- Area Input Bar -->
+        <div class="p-4 bg-zinc-950 border-t border-zinc-800">
+            <div class="max-w-4xl mx-auto relative flex items-end gap-2 bg-zinc-900 border border-zinc-800 rounded-lg p-2 focus-within:border-zinc-500 transition-colors">
+                
+                <!-- Tombol Lampiran (Sesi 2 Prep) -->
+                <button class="p-2 text-zinc-500 hover:text-zinc-300 transition-colors shrink-0 rounded" title="Lampirkan File">
+                    <i class="fa-solid fa-paperclip"></i>
+                </button>
+
+                <!-- Input Teks -->
+                <textarea id="chat-input" rows="1" class="w-full bg-transparent text-zinc-200 placeholder-zinc-600 outline-none resize-none py-2 text-sm" placeholder="Ketik pesan atau error code di sini..."></textarea>
+                
+                <!-- Tombol Kirim -->
+                <button id="send-btn" class="p-2 bg-zinc-100 text-zinc-950 hover:bg-white rounded transition-colors shrink-0 font-bold px-4">
+                    Kirim
+                </button>
+            </div>
+            <p class="text-center text-[10px] text-zinc-600 mt-2">Diberdayakan oleh Gemini API (Hacktiv8 Final Project)</p>
+        </div>
+    </div>
+
+    <!-- Logika JavaScript -->
+    <script>
+        // --- 1. LOGIKA POMODORO TIMER ---
+        let timerDuration = 25 * 60; // 25 menit
+        let timeRemaining = timerDuration;
+        let timerInterval = null;
+        let isRunning = false;
+
+        const display = document.getElementById('timer-display');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const statusText = document.getElementById('timer-status');
+
+        function updateDisplay() {
+            let minutes = Math.floor(timeRemaining / 60);
+            let seconds = timeRemaining % 60;
+            display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function setTimer(minutes, status) {
+            clearInterval(timerInterval);
+            isRunning = false;
+            timerDuration = minutes * 60;
+            timeRemaining = timerDuration;
+            statusText.textContent = status;
+            startBtn.innerHTML = '<i class="fa-solid fa-play text-xs"></i> Mulai';
+            updateDisplay();
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (isRunning) {
+                // Pause
+                clearInterval(timerInterval);
+                startBtn.innerHTML = '<i class="fa-solid fa-play text-xs"></i> Lanjut';
+                isRunning = false;
+            } else {
+                // Start
+                startBtn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i> Jeda';
+                isRunning = true;
+                timerInterval = setInterval(() => {
+                    if (timeRemaining > 0) {
+                        timeRemaining--;
+                        updateDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        startBtn.innerHTML = '<i class="fa-solid fa-play text-xs"></i> Mulai';
+                        alert("Waktu habis! Silakan cek chat bot untuk instruksi selanjutnya.");
+                        // Opsional: Bikin bot otomatis nge-chat pas waktu habis
+                        addMessageToUI('bot', 'Waktu fokus sudah habis! Yuk istirahat sebentar, regangkan badan dan minum air putih. 🚰');
+                    }
+                }, 1000);
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            setTimer(timerDuration / 60, statusText.textContent);
+        });
+
+        // --- 2. LOGIKA CHAT UI & API FETCH (SIAP UNTUK SESI 3) ---
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if(this.value === '') this.style.height = 'auto';
+        });
+
+        function addMessageToUI(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = sender === 'user' 
+                ? 'flex items-start gap-3 w-full max-w-2xl self-end flex-row-reverse' 
+                : 'flex items-start gap-3 w-full max-w-2xl';
+
+            const iconHTML = sender === 'user'
+                ? `<div class="w-8 h-8 rounded bg-zinc-200 text-zinc-900 flex-shrink-0 flex items-center justify-center mt-1"><i class="fa-solid fa-user text-sm"></i></div>`
+                : `<div class="w-8 h-8 rounded bg-zinc-800 border border-zinc-700 flex-shrink-0 flex items-center justify-center mt-1"><i class="fa-solid fa-robot text-sm text-zinc-400"></i></div>`;
+
+            const bubbleClass = sender === 'user'
+                ? 'bg-zinc-200 text-zinc-950 px-4 py-3 rounded-lg rounded-tr-none'
+                : 'bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-3 rounded-lg rounded-tl-none';
+
+            msgDiv.innerHTML = `
+                ${iconHTML}
+                <div class="${bubbleClass}">
+                    ${text}
+                </div>
+            `;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // 1. Tampilkan pesan user di UI
+            addMessageToUI('user', message);
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            // 2. Tampilkan loading indicator
+            typingIndicator.classList.remove('hidden');
+
+            // 3. (UNTUK FINAL PROJECT NANTI) - Ini kode Fetch ke Backend Node.js kamu
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/chat', { // Ganti URL sesuai port backend Sesi 3 kamu
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: message })
+                });
+                
+                const data = await response.json();
+                typingIndicator.classList.add('hidden');
+                
+                if(data.reply) {
+                    addMessageToUI('bot', data.reply);
+                } else {
+                    addMessageToUI('bot', 'Maaf, terjadi kesalahan pada respons API.');
+                }
+            } catch (error) {
+                console.error(error);
+                typingIndicator.classList.add('hidden');
+                addMessageToUI('bot', 'Ups! Gagal terhubung ke server backend. Pastikan server Node.js kamu sudah jalan ya.');
+            }
+            
+
+            // --- HAPUS BLOK SIMULASI INI JIKA SUDAH DISAMBUNG KE BACKEND ---
+            // Simulasi respon sementara (karena belum nyambung backend asli)
+            // setTimeout(() => {
+            //     typingIndicator.classList.add('hidden');
+            //     addMessageToUI('bot', '*(Ini pesan simulasi UI)* Nanti jawaban dari Gemini API akan muncul di sini setelah kamu menghubungkan `fetch()` di JavaScript ke server Express.js buatanmu di Sesi 3!');
+            // }, 1500);
+            // -------------------------------------------------------------
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
